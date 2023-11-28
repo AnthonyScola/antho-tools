@@ -1,39 +1,34 @@
 #!/bin/bash
-
 #####################################################
 #   Clone 'n Open                                   #
 #   Desc: Clones and opens a repo in VS Code        #
 #                                                   #
 #   By: Anthony Scola                               #
-#   Last updated: 11/27/2023                        #
+#   Last updated: 11/28/2023                        #
 #####################################################
-
-
-
-
 giturl=$1;
 echo $giturl;
 
-# get github or gitlab from url
-if [[ $giturl == "https://"* ]]; then
-  gitdomain=$(echo $giturl | sed 's/https:\/\///' | sed 's/\/.*//' | sed 's/\.com//');
-elif [[ $giturl == "git@"* ]]; then
-  gitdomain=$(echo $giturl | sed 's/git@//' | sed 's/:.*//' | sed 's/\.com//');
-else
-  echo "Git url not recognized.";
-  exit 1;
-fi
+case "$giturl" in
+"https://"*)
+  gitdomain=$(echo $giturl | awk -F/ '{print $3}' | awk -F. '{print $1}')
+  ;;
+"git@"*)
+  gitdomain=$(echo $giturl | awk -F@ '{print $2}' | awk -F: '{print $1}' | awk -F. '{print $1}')
+  ;;
+*)
+  echo "Git url not recognized."
+  exit 1
+  ;;
+esac
 
-# take location from env variable
-if [ -z "$MY_GIT_DIR" ]; then
-  echo "No git directory set. Using default: $HOME/Documents/$gitdomain";
-  if [ ! -d "$HOME/Documents/$gitdomain" ]; then
-    mkdir -p $HOME/Documents/$gitdomain;
-  fi
-  gitdir=$HOME/Documents/$gitdomain;
-else
-  gitdir=$MY_GIT_DIR;
-fi
+# take location from env variable or use default
+gitdir=${MY_GIT_DIR:-$HOME/$gitdomain}
+
+[ -d "$gitdir" ] && echo "Directory $gitdir already exists." || {
+    read -p "Directory $gitdir does not exist. Do you want to create it? (y/n) " confirm
+    [ "$confirm" = "y" ] && mkdir -p $gitdir && echo "Directory $gitdir created." || echo "Directory not created."
+}
 
 cd $gitdir;
 
