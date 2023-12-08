@@ -1,4 +1,4 @@
-#!/bin/bash/
+#!/bin/bash
 
 printf "\n\e[1;33m   |-| Enabling Sound Redirection....    \e[0m\n\n"
 
@@ -22,8 +22,7 @@ fi
 # Version Specific - adding source and correct pulseaudio version for Debian !!!
 if [[ *"$version"* = *"Debian"*  ]]; then
   printf "\e[1;32m       	|-| Install dev tools used to compile sound modules \e[0m\n\n"
-  sudo apt install libconfig-dev -y
-  sudo apt install -qq git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev -y
+  sudo apt install -qq libconfig-dev git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev -y
   sudo apt build-dep -qq pulseaudio -y
   sudo apt update
 elif  [[ *"$version"* = *"Mint"* ]]; then
@@ -56,10 +55,8 @@ fi
 sudo apt install git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev libconfig-dev -y
 
 # Additional Libs needed for other Distributions like Kubuntu (for security only)
-sudo apt install meson -y
-sudo apt install libtdb-dev -y
-sudo apt install doxygen -y
-sudo apt install check -y
+sudo apt install meson libtdb-dev doxygen check -y
+
 sudo apt build-dep pulseaudio -y
 
 printf "\n\e[1;32m Download pulseaudio sources files \e[0m"
