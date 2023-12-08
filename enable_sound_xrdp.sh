@@ -4,7 +4,7 @@ printf "\n\e[1;33m   |-| Enabling Sound Redirection....    \e[0m\n\n"
 
 pulsever=$(pulseaudio --version | awk '{print $2}')
 
-printf "\e[1;32m       |-| Install additional packages..     \e[0m\n"
+printf "\e[1;32m Install additional packages \e[0m\n"
 
 # Check if the script is running with root privileges
 if [ "$EUID" -ne 0 ]
@@ -21,14 +21,14 @@ fi
 
 # Version Specific - adding source and correct pulseaudio version for Debian !!!
 if [[ *"$version"* = *"Debian"*  ]]; then
-  printf "\e[1;32m       	|-| Install dev tools used to compile sound modules..     \e[0m\n\n"
+  printf "\e[1;32m       	|-| Install dev tools used to compile sound modules \e[0m\n\n"
   sudo apt install libconfig-dev -y
   sudo apt install -qq git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev -y
   sudo apt build-dep -qq pulseaudio -y
   sudo apt update
 elif  [[ *"$version"* = *"Mint"* ]]; then
   # Step 0 - Install Some PreReqs
-  printf "\n\e[1;32m       	|-| Enabling Sources Repository for Linux Mint..     \e[0m\n"
+  printf "\n\e[1;32m       	|-| Enabling Sources Repository for Linux Mint \e[0m\n"
 
   # Add sources to the sources list
   sudo bash -c "cat >/etc/apt/sources.list.d/official-source-repositories.list" <<EOF
@@ -42,7 +42,7 @@ EOF
   sudo apt update
 else
   # Step 1 - Enable Source Code Repository
-  printf "\e[1;32m      	|-| Adding Source Code Repository..     \e[0m\n"
+  printf "\e[1;32m      	|-| Adding Source Code Repository \e[0m\n"
 
   sudo apt-add-repository -s -y 'deb http://archive.ubuntu.com/ubuntu/ '$codename' main restricted'
   sudo apt-add-repository -s -y 'deb http://archive.ubuntu.com/ubuntu/ '$codename' restricted universe main multiverse'
@@ -62,11 +62,11 @@ sudo apt install doxygen -y
 sudo apt install check -y
 sudo apt build-dep pulseaudio -y
 
-printf "\n\e[1;32m       |-| Download pulseaudio sources files..     \e[0m"
+printf "\n\e[1;32m Download pulseaudio sources files \e[0m"
 # Step 3 -  Download pulseaudio source in /tmp directory - Debian source repo should be already enabled
 cd /tmp
 apt source pulseaudio
-printf "\e[1;32m       |-| Compile pulseaudio sources files..     \e[0m"
+printf "\e[1;32m Compile pulseaudio sources files \e[0m"
 
 # Step 4 - Compile PulseAudio based on OS version & PulseAudio Version
 cd /tmp/pulseaudio-$pulsever*
@@ -82,7 +82,7 @@ cd "$PulsePath"
   fi
 
 # step 5 - Compile xrdp sound modules
-printf "\e[1;32m       |-| Compiling xRDP Sound modules...     \e[0m"
+printf "\e[1;32m Compiling xRDP Sound modules...\e[0m"
 cd /tmp
 git clone https://github.com/neutrinolabs/pulseaudio-module-xrdp.git
 cd pulseaudio-module-xrdp
