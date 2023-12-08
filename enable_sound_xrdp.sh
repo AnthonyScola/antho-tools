@@ -1,6 +1,6 @@
 #!/bin/bash
 
-printf "\n\e[1;33m   |-| Enabling Sound Redirection....    \e[0m\n\n"
+printf "\n\e[1;33m Enabling Sound Redirection....    \e[0m\n\n"
 
 pulsever=$(pulseaudio --version | awk '{print $2}')
 
@@ -21,13 +21,13 @@ fi
 
 # Version Specific - adding source and correct pulseaudio version for Debian !!!
 if [[ *"$version"* = *"Debian"*  ]]; then
-  printf "\e[1;32m       	|-| Install dev tools used to compile sound modules \e[0m\n\n"
+  printf "\e[1;32m Install dev tools used to compile sound modules \e[0m\n\n"
   sudo apt install -qq libconfig-dev git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev -y
   sudo apt build-dep -qq pulseaudio -y
   sudo apt update
 elif  [[ *"$version"* = *"Mint"* ]]; then
   # Step 0 - Install Some PreReqs
-  printf "\n\e[1;32m       	|-| Enabling Sources Repository for Linux Mint \e[0m\n"
+  printf "\n\e[1;32m Enabling Sources Repository for Linux Mint \e[0m\n"
 
   # Add sources to the sources list
   sudo bash -c "cat >/etc/apt/sources.list.d/official-source-repositories.list" <<EOF
@@ -41,7 +41,7 @@ EOF
   sudo apt update
 else
   # Step 1 - Enable Source Code Repository
-  printf "\e[1;32m      	|-| Adding Source Code Repository \e[0m\n"
+  printf "\e[1;32m Adding Source Code Repository \e[0m\n"
 
   sudo apt-add-repository -s -y 'deb http://archive.ubuntu.com/ubuntu/ '$codename' main restricted'
   sudo apt-add-repository -s -y 'deb http://archive.ubuntu.com/ubuntu/ '$codename' restricted universe main multiverse'
