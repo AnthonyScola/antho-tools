@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#####################################################
+#   Application Name: Enable Sound Redirection      #
+#   Desc: This script enables sound redirection     #
+#         from pulseaudio for xRDP sessions.        #
+#                                                   #
+#   By: Anthony Scola                               #
+#   Last updated: 12/08/2023                        #
+#####################################################
+
 printf "\n\e[1;33m Enabling Sound Redirection....    \e[0m\n\n"
 
 pulsever=$(pulseaudio --version | awk '{print $2}')
@@ -25,7 +34,9 @@ if [[ *"$version"* = *"Debian"*  ]]; then
   sudo apt install -qq libconfig-dev git libpulse-dev autoconf m4 intltool build-essential dpkg-dev libtool libsndfile-dev libcap-dev libjson-c-dev -y
   sudo apt build-dep -qq pulseaudio -y
   sudo apt update
-elif  [[ *"$version"* = *"Mint"* ]]; then
+fi
+
+if  [[ *"$version"* = *"Mint"* ]]; then
   # Step 0 - Install Some PreReqs
   printf "\n\e[1;32m Enabling Sources Repository for Linux Mint \e[0m\n"
 
@@ -39,7 +50,9 @@ deb-src http://security.ubuntu.com/ubuntu/ $ucodename-security main restricted u
 EOF
 
   sudo apt update
-else
+if
+
+if [[ *"$version"* = *"Ubuntu"* ]]; then
   # Step 1 - Enable Source Code Repository
   printf "\e[1;32m Adding Source Code Repository \e[0m\n"
 
