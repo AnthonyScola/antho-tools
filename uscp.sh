@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################
-#   Application Name: USB SCP                       #
+#   Application Name: USB Secure Copy               #
 #   Desc: Appends the contents of an rsa.pub to     #
 #         your authorized_keys locally.             #
 #                                                   #
@@ -13,11 +13,12 @@
 SCRIPT_DIR=$(dirname "$0")
 
 # Path to the public key on your flash drive
-PUB_KEY_PATH="$SCRIPT_DIR/id_rsa.pub"
+# Use the first command line argument as the public key path, if provided
+PUB_KEY_PATH=${1:-"$SCRIPT_DIR/id_rsa.pub"}
 
 # Exit if the public key file doesn't exist
 if [ ! -f "$PUB_KEY_PATH" ]; then
-    echo "The id_rsa.pub file is not present in the script directory."
+    echo "id_rsa.pub not found! Exiting.. "
     exit 1
 fi
 
