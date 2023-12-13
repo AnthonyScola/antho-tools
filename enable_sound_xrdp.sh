@@ -6,7 +6,7 @@
 #         from pulseaudio for xRDP sessions.        #
 #                                                   #
 #   By: Anthony Scola                               #
-#   Last updated: 12/08/2023                        #
+#   Last updated: 12/13/2023                        #
 #####################################################
 
 printf "\n\e[1;33m Enabling Sound Redirection....    \e[0m\n\n"
