@@ -6,7 +6,7 @@
 #         from pulseaudio for xRDP sessions.        #
 #                                                   #
 #   By: Anthony Scola                               #
-#   Last updated: 12/08/2023                        #
+#   Last updated: 12/13/2023                        #
 #####################################################
 
 printf "\n\e[1;33m Enabling Sound Redirection....    \e[0m\n\n"
@@ -16,14 +16,13 @@ pulsever=$(pulseaudio --version | awk '{print $2}')
 printf "\e[1;32m Install additional packages \e[0m\n"
 
 # Check if the script is running with root privileges
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root"
+if [ "$EUID" -ne 0 ]; then 
+  echo "Please run as root"
   exit
 fi
 
 # Check if apt is installed
-if ! command -v apt &> /dev/null
-then
+if ! command -v apt &> /dev/null; then
   echo "apt could not be found"
   exit
 fi
@@ -50,7 +49,7 @@ deb-src http://security.ubuntu.com/ubuntu/ $ucodename-security main restricted u
 EOF
 
   sudo apt update
-if
+fi
 
 if [[ *"$version"* = *"Ubuntu"* ]]; then
   # Step 1 - Enable Source Code Repository
@@ -83,13 +82,13 @@ cd /tmp/pulseaudio-$pulsever*
 PulsePath=$(pwd)
 
 cd "$PulsePath"
-  if [ -x ./configure ]; then
-    #if pulseaudio version <15.0, then autotools will be used (legacy)
-    ./configure
-  elif [ -f ./meson.build ]; then
-      #if pulseaudio version >15.0, then meson tools will be used (new)
-    sudo meson --prefix=$PulsePath build
-  fi
+if [ -x ./configure ]; then
+  #if pulseaudio version <15.0, then autotools will be used (legacy)
+  ./configure
+elif [ -f ./meson.build ]; then
+    #if pulseaudio version >15.0, then meson tools will be used (new)
+  sudo meson --prefix=$PulsePath build
+fi
 
 # step 5 - Compile xrdp sound modules
 printf "\e[1;32m Compiling xRDP Sound modules...\e[0m"
@@ -103,8 +102,7 @@ make
 sudo make install
 
 #-- check if no error during compilation
-if [ $? -eq 0 ]
-then
+if [ $? -eq 0 ]; then
   printf "\n\e[1;32m Compiled successfully!\nPlease Reboot to enable xRDP Sound.\e[0m\n"
 else
   printf "\n\e[1;31m Sound Redirection failed! \e[0m"
