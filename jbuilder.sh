@@ -5,7 +5,7 @@
 #   Desc: Bulds and runs your java project.         #
 #                                                   #
 #   By: Anthony Scola                               #
-#   Last updated: 12/02/2023                        #
+#   Last updated: 09/06/2024                        #
 #####################################################
 
 # Initialize killports flag as false
@@ -35,12 +35,20 @@ fi
 pushd "./$(basename `pwd`)" >/dev/null
 
 # Extract project name and version from pom.xml
-name=$(xmlstarlet sel -t -v '//artifactId' pom.xml)
-version=$(xmlstarlet sel -t -v '//version' pom.xml)
+name=$(grep -m1 '<artifactId>' pom.xml | sed 's/.*<artifactId>//;s/<\/artifactId>.*//')
+version=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>//;s/<\/version>.*//')
+
+# Checks maven-compiler-plugin configuration for preview features
+if grep -q '\-\-enable-preview' pom.xml; then
+  PREVIEW_FLAG="--enable-preview"
+  echo "[INFO] Preview settings found, enabling preview mode for build"
+else
+  PREVIEW_FLAG=""
+fi
 
 # Build and run the java project
 if mvn clean install -Dmaven.test.skip=true; then
-  java -jar "./target/$name-$version-exec.jar"
+  java $PREVIEW_FLAG -jar "./target/$name-$version-exec.jar"
 else
   echo "Build failed. Not running the application."
 fi
