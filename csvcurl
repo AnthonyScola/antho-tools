@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Check if the correct number of arguments is provided
+if [ "$#" -lt 4 ]; then
+  echo "Usage: $0 <api_url> <file_path> <jwt> <column_mappings>"
+  echo "Example: $0 'https://api.example.com/resource/{uuid}/{name}' 'uuids.csv' 'your_jwt_token' 'uuid=0,name=1'"
+  exit 1
+fi
+
+# Assign arguments to variables
+api_url=$1
+file=$2
+jwt=$3
+column_mappings=$4
+
+# Parse column mappings into an associative array
+declare -A mappings
+IFS=',' read -ra pairs <<< "$column_mappings"
+for pair in "${pairs[@]}"; do
+  IFS='=' read -ra kv <<< "$pair"
+  mappings[${kv[0]}]=${kv[1]}
+done
+
+# Read the file line by line
+while IFS=, read -r -a columns || [[ -n "$columns" ]]; do
+  # Construct the API URL by replacing placeholders with actual values from the CSV
+  url=$api_url
+  for key in "${!mappings[@]}"; do
+    value=${columns[${mappings[$key]}]}
+    url=${url//\{$key\}/$value}
+  done
+
+  # Print the constructed URL
+  echo "URL: $url"
+
+  # Make a curl call with the constructed URL
+  curl --location --request GET "$url" --header "Authorization: Bearer $jwt"
+done < "$file"
