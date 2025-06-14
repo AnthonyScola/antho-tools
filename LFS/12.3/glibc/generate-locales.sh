@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compatible with LFS 12.3 and glibc 2.41
-set -e
+set -euo pipefail
 
 cat << EOF | while read -r -a args; do localedef "${args[@]}"; done
 -i C -f UTF-8 C.UTF-8
