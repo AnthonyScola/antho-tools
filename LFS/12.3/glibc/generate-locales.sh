@@ -2,6 +2,7 @@
 # Compatible with LFS 12.3 and glibc 2.41
 set -euo pipefail
 
+# These locales are safe to loop over
 while read -r -a args; do
   localedef "${args[@]}"
 done << EOF
@@ -29,7 +30,6 @@ done << EOF
 -i it_IT -f ISO-8859-15 it_IT@euro
 -i it_IT -f UTF-8 it_IT.UTF-8
 -i ja_JP -f EUC-JP ja_JP
--i ja_JP -f SHIFT_JIS ja_JP.SJIS 2> /dev/null || true
 -i ja_JP -f UTF-8 ja_JP.UTF-8
 -i nl_NL@euro -f ISO-8859-15 nl_NL@euro
 -i ru_RU -f KOI8-R ru_RU.KOI8-R
@@ -41,3 +41,7 @@ done << EOF
 -i zh_HK -f BIG5-HKSCS zh_HK.BIG5-HKSCS
 -i zh_TW -f UTF-8 zh_TW.UTF-8
 EOF
+
+# Note: The ja_JP.SJIS locale often fails due to incomplete character map support in some systems.
+# It is fine to ignore the error if it occurs.
+localedef -i ja_JP -f SHIFT_JIS ja_JP.SJIS 2>/dev/null || true
