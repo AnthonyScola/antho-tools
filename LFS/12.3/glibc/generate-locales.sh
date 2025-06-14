@@ -2,7 +2,7 @@
 # Compatible with LFS 12.3 and glibc 2.41
 set -e
 
-cat << EOF | while read -r line; do eval "localedef $line"; done
+cat << EOF | while read -r -a args; do localedef "${args[@]}"; done
 -i C -f UTF-8 C.UTF-8
 -i cs_CZ -f UTF-8 cs_CZ.UTF-8
 -i de_DE -f ISO-8859-1 de_DE
