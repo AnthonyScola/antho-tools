@@ -1,0 +1,43 @@
+#!/sbin/openrc-run
+
+name="kiwix"
+description="Offline Wikipedia server"
+
+depend() {
+    need net
+}
+
+start() {
+    local zims=""
+    local base_url="https://download.kiwix.org/zim/wikipedia/"
+
+    for file in /mnt/archive/kiwix/*.zim; do
+        [ -f "$file" ] || continue  # Skip if no matching files
+        filename=$(basename "$file")
+        url="${base_url}${filename}"
+
+        # Get remote file size
+        remote_size=$(wget --spider --server-response "$url" 2>&1 | awk '/Content-Length/ {print $2}' | tail -n1)
+
+        # Get local file size
+        local_size=$(stat -c%s "$file")
+
+        # Compare sizes
+        if [ "$local_size" -eq "$remote_size" ] 2>/dev/null; then
+            zims="$zims $file"
+        fi
+    done
+
+    if [ -z "$zims" ]; then
+        eerror "No complete ZIM files found. Aborting."
+        return 1
+    fi
+
+    command="/usr/bin/kiwix-serve"
+    command_args="--port=8080 $zims"
+    command_background="yes"
+
+    ebegin "Starting Kiwix server"
+    start-stop-daemon --start --exec "$command" -- $command_args
+    eend $?
+}
