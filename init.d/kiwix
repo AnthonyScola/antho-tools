@@ -1,43 +1,93 @@
 #!/sbin/openrc-run
 
-name="kiwix"
-description="Offline Wikipedia server"
+readonly BASE_URL="https://download.kiwix.org/zim"
+readonly LOCAL_ZIM_DIR="/mnt/archive/kiwix"
+readonly CACHE_FILE="/var/cache/kiwix_locations.cache"
+readonly PIDFILE="/var/run/kiwix.pid"
 
-depend() {
-    need net
+command="/usr/bin/kiwix-serve"
+command_background="yes"
+pidfile="$PIDFILE"
+
+depend() { need net; after firewall; }
+
+# Cache helpers
+cache_get() { [ -f "$CACHE_FILE" ] && awk -F: -v f="$(basename "$1")" '$1==f{print $2;exit}' "$CACHE_FILE"; }
+cache_set() { mkdir -p "$(dirname "$CACHE_FILE")"; { grep -v "^$(basename "$1"):" "$CACHE_FILE" 2>/dev/null; echo "$(basename "$1"):$2"; } > "$CACHE_FILE.tmp" && mv "$CACHE_FILE.tmp" "$CACHE_FILE"; }
+
+# Get available subdirectories
+get_subdirs() {
+    wget -qO- --timeout=3 "$BASE_URL/" | sed -n 's/.*href="\([^/"]*\)\/.*/\1/p' | grep -v '^\.' | sort -u ||
+    echo "wikipedia wiktionary wikisource wikiquote wikivoyage wikinews wikibooks other stack_exchange ted"
 }
 
-start() {
-    local zims=""
-    local base_url="https://download.kiwix.org/zim/wikipedia/"
-
-    for file in /mnt/archive/kiwix/*.zim; do
-        [ -f "$file" ] || continue  # Skip if no matching files
-        filename=$(basename "$file")
-        url="${base_url}${filename}"
-
-        # Get remote file size
-        remote_size=$(wget --spider --server-response "$url" 2>&1 | awk '/Content-Length/ {print $2}' | tail -n1)
-
-        # Get local file size
-        local_size=$(stat -c%s "$file")
-
-        # Compare sizes
-        if [ "$local_size" -eq "$remote_size" ] 2>/dev/null; then
-            zims="$zims $file"
+# Verify ZIM file
+verify_zim() {
+    local zim="$1" subdirs="$2" filename cached_subdir
+    [ ! -f "$zim" ] && return 1
+    
+    filename=$(basename "$zim")
+    cached_subdir=$(cache_get "$zim")
+    
+    # Try cached location first
+    if [ -n "$cached_subdir" ] && wget --spider -q --timeout=2 "$BASE_URL/$cached_subdir/$filename" 2>/dev/null; then
+        echo "$zim"
+        return 0
+    fi
+    
+    # Try other subdirectories
+    for subdir in $subdirs; do
+        [ "$subdir" = "$cached_subdir" ] && continue
+        if wget --spider -q --timeout=2 "$BASE_URL/$subdir/$filename" 2>/dev/null; then
+            cache_set "$zim" "$subdir"
+            echo "$zim"
+            return 0
         fi
     done
+    return 1
+}
 
-    if [ -z "$zims" ]; then
-        eerror "No complete ZIM files found. Aborting."
+start_pre() {
+    local subdirs verified_files
+    
+    ebegin "Verifying ZIM files"
+    [ ! -d "$LOCAL_ZIM_DIR" ] && { eerror "Directory $LOCAL_ZIM_DIR not found"; eend 1; return 1; }
+    
+    subdirs=$(get_subdirs)
+    verified_files=$(for zim in "$LOCAL_ZIM_DIR"/*.zim; do verify_zim "$zim" "$subdirs"; done)
+    
+    if [ -n "$verified_files" ]; then
+        command_args="--port=8080 $verified_files"
+        einfo "Found $(echo "$verified_files" | wc -l) verified ZIM files"
+        eend 0
+    else
+        eerror "No valid ZIM files found"
+        eend 1
         return 1
     fi
+}
 
-    command="/usr/bin/kiwix-serve"
-    command_args="--port=8080 $zims"
-    command_background="yes"
+start_post() { einfo "Kiwix server started on port 8080"; }
 
-    ebegin "Starting Kiwix server"
-    start-stop-daemon --start --exec "$command" -- $command_args
-    eend $?
+stop_pre() {
+    # If PID file exists but process is not running, clean it up
+    if [ -f "$pidfile" ]; then
+        local pid=$(cat "$pidfile" 2>/dev/null)
+        if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
+            ewarn "Stale PID file found, removing it"
+            rm -f "$pidfile"
+        fi
+    fi
+    
+    # If no PID file but process is running, try to stop by name
+    if [ ! -f "$pidfile" ] && pgrep -f "kiwix-serve" >/dev/null; then
+        ewarn "No PID file but kiwix-serve is running, stopping by process name"
+        pkill -f "kiwix-serve"
+        return 0
+    fi
+}
+
+stop_post() { 
+    einfo "Kiwix server stopped"
+    rm -f "$PIDFILE"
 }
